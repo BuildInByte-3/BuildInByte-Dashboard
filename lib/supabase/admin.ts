@@ -1,0 +1,12 @@
+import "server-only";
+import { createClient } from "@supabase/supabase-js";
+import { getServerEnv } from "@/lib/env";
+import type { Database } from "@/lib/supabase/database.types";
+
+export function createAdminClient() {
+  const env = getServerEnv();
+  return createClient<Database>(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { autoRefreshToken: false, persistSession: false },
+    global: { headers: { "X-Client-Info": "buildinbyte-dashboard/0.1" } },
+  });
+}
