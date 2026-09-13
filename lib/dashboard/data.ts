@@ -43,7 +43,15 @@ export async function getUsers() {
 }
 
 export async function getOrders() {
-  if (isPreviewMode()) return [{ id: "preview-order", order_number: "PREVIEW-001", buyer_email: "customer@example.test", currency: "INR", total_minor: 2500000, total_inr_minor: 2500000, payment_status: "paid", fulfillment_status: "in_progress", customer_city: "Bengaluru", customer_country_code: "IN", created_at: new Date().toISOString(), updated_at: new Date().toISOString() }];
+  if (isPreviewMode()) {
+    const now = Date.now();
+    return [
+      { id: "preview-order-1", order_number: "BIB-2048", buyer_email: "meera@example.test", currency: "INR", total_minor: 2500000, total_inr_minor: 2500000, payment_status: "paid", fulfillment_status: "in_progress", customer_city: "Bengaluru", customer_country_code: "IN", created_at: new Date(now).toISOString(), updated_at: new Date(now).toISOString() },
+      { id: "preview-order-2", order_number: "BIB-2047", buyer_email: "arjun@example.test", currency: "INR", total_minor: 1850000, total_inr_minor: 1850000, payment_status: "paid", fulfillment_status: "confirmed", customer_city: "Hyderabad", customer_country_code: "IN", created_at: new Date(now - 86400000).toISOString(), updated_at: new Date(now - 86400000).toISOString() },
+      { id: "preview-order-3", order_number: "BIB-2046", buyer_email: "nisha@example.test", currency: "INR", total_minor: 3200000, total_inr_minor: 3200000, payment_status: "pending", fulfillment_status: "new", customer_city: "Mumbai", customer_country_code: "IN", created_at: new Date(now - 172800000).toISOString(), updated_at: new Date(now - 172800000).toISOString() },
+      { id: "preview-order-4", order_number: "BIB-2045", buyer_email: "vikram@example.test", currency: "INR", total_minor: 1450000, total_inr_minor: 1450000, payment_status: "paid", fulfillment_status: "ready", customer_city: "Chennai", customer_country_code: "IN", created_at: new Date(now - 259200000).toISOString(), updated_at: new Date(now - 259200000).toISOString() },
+    ];
+  }
   const client = createAdminClient();
   const { data, error } = await client.from("orders").select("id,order_number,buyer_email,currency,total_minor,total_inr_minor,payment_status,fulfillment_status,customer_city,customer_country_code,created_at,updated_at").order("created_at", { ascending: false }).limit(500);
   raise(error);

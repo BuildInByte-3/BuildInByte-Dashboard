@@ -3,15 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack -p 8100",
+    "dev": "next dev --webpack -p 8102",
     "build": "next build --webpack",
-    "start": "next start -p 8100",
+    "start": "next start -p 8102",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "admin:create": "tsx scripts/create-admin.ts",
-    "admin:reset-password": "tsx scripts/reset-admin-password.ts"
+    "admin:reset-password": "tsx scripts/reset-admin-password.ts",
+    "preview:setup": "tsx scripts/setup-local-preview.ts"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.0.2",

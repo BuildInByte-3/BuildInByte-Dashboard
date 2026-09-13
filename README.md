@@ -4,10 +4,20 @@ Private administrative dashboard for BuildInByte. It is a separate application a
 
 ## Local setup
 
+For a local interface preview with synthetic data:
+
+1. Run `npm install`.
+2. Run `npm run preview:setup`.
+3. Run `npm run dev` and open `http://localhost:8102`.
+
+The setup command creates a Git-ignored `.env.local` with temporary local credentials. It will not overwrite an existing file unless you explicitly run `npm run preview:setup -- --force`. Preview mode is read-only and is disabled on Vercel production.
+
+For staging or production data:
+
 1. Copy `.env.example` to `.env.local` and supply server-only values.
 2. Apply `supabase/migrations` to a staging Supabase project.
 3. Run `npm run admin:create` to bootstrap the first owner and enroll TOTP MFA.
-4. Run `npm run dev` and open `http://localhost:8100`.
+4. Run `npm run dev` and open `http://localhost:8102`.
 
 The application intentionally shows a configuration screen when Supabase credentials are absent; it never falls back to demo or mock business data.
 
