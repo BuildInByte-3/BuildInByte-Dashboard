@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireApiAdmin } from "@/lib/auth/api";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { audit } from "@/lib/security/audit";
+import { isPreviewMode } from "@/lib/env";
 
 function csv(value: unknown) {
   let normalized = String(value ?? "");
@@ -22,6 +23,11 @@ export async function GET(request: NextRequest) {
   const toExclusive = new Date(`${to}T00:00:00.000Z`);
   if (!(fromDate < toExclusive) || toExclusive.getTime() - fromDate.getTime() > 366 * 86_400_000) {
     return NextResponse.json({ error: "Date range must be between 1 and 366 days" }, { status: 422 });
+  }
+
+  if (isPreviewMode()) {
+    const body = "id,order_id,provider,method,status,currency,amount_minor,amount_inr_minor,created_at\n\"preview-payment\",\"preview-order\",\"manual\",\"bank_transfer\",\"captured\",\"INR\",\"2500000\",\"2500000\",\"preview\"";
+    return new NextResponse(body, { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="finance-preview-${from}-${to}.csv"`, "Cache-Control": "no-store" } });
   }
 
   const client = createAdminClient();

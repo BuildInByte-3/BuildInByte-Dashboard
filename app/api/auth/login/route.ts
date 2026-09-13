@@ -8,6 +8,7 @@ import { hashIdentity, hashIp, hashRecoveryCode } from "@/lib/security/crypto";
 import { assertSameOrigin, noStoreHeaders, requestIp } from "@/lib/security/request";
 import { audit } from "@/lib/security/audit";
 import type { AdminRole } from "@/lib/auth/permissions";
+import { isConfigured, isPreviewMode } from "@/lib/env";
 
 function response(body: Record<string, unknown>, status: number) {
   return NextResponse.json(body, { status, headers: noStoreHeaders() });
@@ -17,8 +18,17 @@ export async function POST(request: NextRequest) {
   try { assertSameOrigin(request); } catch { return response({ error: "Invalid request origin" }, 403); }
   const parsed = loginSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return response({ error: "Invalid credentials" }, 422);
+  if (!isConfigured()) return response({ error: "Authentication service unavailable" }, 503);
 
   const { email, password, totp } = parsed.data;
+  if (isPreviewMode()) {
+    const valid = email === process.env.DASHBOARD_PREVIEW_EMAIL?.toLowerCase()
+      && Boolean(process.env.DASHBOARD_PREVIEW_PASSWORD_HASH)
+      && await verifyPassword(process.env.DASHBOARD_PREVIEW_PASSWORD_HASH!, password);
+    if (!valid) return response({ error: "Invalid credentials" }, 401);
+    await createSession({ id: "local-preview", email, displayName: "Local Preview", role: "owner" });
+    return response({ authenticated: true, preview: true }, 200);
+  }
   const ipHash = hashIp(requestIp(request));
   const identityHash = hashIdentity(email);
   const client = createAdminClient();

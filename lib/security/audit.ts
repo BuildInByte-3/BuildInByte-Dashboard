@@ -1,8 +1,10 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { AdminIdentity } from "@/lib/auth/session";
+import { isPreviewMode } from "@/lib/env";
 
 export async function audit(admin: AdminIdentity | null, action: string, entityType: string, entityId?: string, metadata: Record<string, unknown> = {}) {
+  if (isPreviewMode()) return;
   const supabase = createAdminClient();
   const { error } = await supabase.from("admin_audit_log").insert({
     admin_id: admin?.id ?? null,

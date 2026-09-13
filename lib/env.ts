@@ -12,6 +12,20 @@ const schema = z.object({
 
 export type ServerEnv = z.infer<typeof schema>;
 
+const previewSchema = z.object({
+  DASHBOARD_PREVIEW_MODE: z.literal("true"),
+  DASHBOARD_PREVIEW_EMAIL: z.string().email(),
+  DASHBOARD_PREVIEW_PASSWORD_HASH: z.string().startsWith("$argon2"),
+  DASHBOARD_PREVIEW_SESSION_SECRET: z.string().min(32),
+});
+
+export function isPreviewMode() {
+  // `.env.local` is ignored by Git. The extra Vercel guard makes preview mode
+  // impossible on the planned production hosting target even if variables are
+  // accidentally copied there.
+  return process.env.VERCEL_ENV !== "production" && previewSchema.safeParse(process.env).success;
+}
+
 export function getServerEnv(): ServerEnv {
   const parsed = schema.safeParse(process.env);
   if (!parsed.success) {
@@ -22,5 +36,5 @@ export function getServerEnv(): ServerEnv {
 }
 
 export function isConfigured() {
-  return schema.safeParse(process.env).success;
+  return schema.safeParse(process.env).success || isPreviewMode();
 }

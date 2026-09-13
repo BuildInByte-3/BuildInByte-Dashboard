@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hashSessionToken, hashUserAgent, randomToken } from "@/lib/security/crypto";
 import { hasPermission, type AdminRole, type Permission } from "@/lib/auth/permissions";
+import { createPreviewSession, getPreviewSession, revokePreviewSession } from "@/lib/auth/preview";
+import { isPreviewMode } from "@/lib/env";
 
 const ABSOLUTE_HOURS = 8;
 const IDLE_MINUTES = 30;
@@ -20,6 +22,7 @@ export type AdminIdentity = {
 };
 
 export async function createSession(admin: AdminIdentity) {
+  if (isPreviewMode() && admin.id === "local-preview") return createPreviewSession();
   const token = randomToken();
   const now = new Date();
   const expires = new Date(now.getTime() + ABSOLUTE_HOURS * 60 * 60 * 1000);
@@ -46,6 +49,7 @@ export async function createSession(admin: AdminIdentity) {
 }
 
 export async function getSession(): Promise<AdminIdentity | null> {
+  if (isPreviewMode()) return getPreviewSession();
   const cookieStore = await cookies();
   const token = cookieStore.get(sessionCookieName)?.value;
   if (!token) return null;
@@ -95,6 +99,7 @@ export async function requireAdmin(permission: Permission = "dashboard:read") {
 }
 
 export async function revokeCurrentSession() {
+  if (isPreviewMode()) return revokePreviewSession();
   const cookieStore = await cookies();
   const token = cookieStore.get(sessionCookieName)?.value;
   if (token) {

@@ -25,6 +25,7 @@ export function ManagedTable({
   const [query, setQuery] = useState("");
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const writesEnabled = canWrite && !rows.some((row) => row.id === "local-preview" || row.id.startsWith("preview-"));
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return needle ? rows.filter((row) => Object.values(row).some((value) => String(value ?? "").toLowerCase().includes(needle))) : rows;
@@ -56,10 +57,10 @@ export function ManagedTable({
     {error ? <p className="error" role="alert">{error}</p> : null}
     {!visible.length ? <div className="empty-state">{empty}</div> : <div className="table-wrap"><table><thead><tr>
       {columns.map((column) => <th key={column.key}>{column.label}</th>)}
-      {canWrite && mutations.length ? <th>Update</th> : null}
+      {writesEnabled && mutations.length ? <th>Update</th> : null}
     </tr></thead><tbody>{visible.map((row) => <tr key={row.id}>
       {columns.map((column) => <td key={column.key}>{String(row[column.key] ?? "—")}</td>)}
-      {canWrite && mutations.length ? <td><div className="row-actions">{mutations.map((mutation) => {
+      {writesEnabled && mutations.length ? <td><div className="row-actions">{mutations.map((mutation) => {
         const busy = pending === `${row.id}:${mutation.key}`;
         return <label key={mutation.key}>{mutation.label}<select value={String(row[mutation.key] ?? "")} disabled={Boolean(pending)} onChange={(event) => update(row, mutation, event.target.value)} aria-busy={busy}>
           {mutation.options.map((option) => <option key={option} value={option}>{option.replaceAll("_", " ")}</option>)}
